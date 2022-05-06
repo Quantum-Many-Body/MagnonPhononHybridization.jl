@@ -1,6 +1,6 @@
-using MagnonPhononHybridization
 using Test
+using SafeTestsets
 
-@testset "MagnonPhononHybridization.jl" begin
-    # Write your tests here.
+@safetestset "MagnonPhononHybridization.jl" begin
+    include("MagnonPhononHybridization.jl")
 end

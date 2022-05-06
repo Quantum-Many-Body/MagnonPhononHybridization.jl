@@ -2,3 +2,6 @@
 *.jl.cov
 *.jl.mem
 /docs/build/
+test/*.png
+
+desktop.ini
