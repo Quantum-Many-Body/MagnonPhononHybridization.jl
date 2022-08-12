@@ -2,17 +2,18 @@ module MagnonPhononHybridization
 
 using LinearAlgebra: norm, dot
 using StaticArrays: SVector
-using QuantumLattices: ID, Operator, AbstractPID, PID, Point, AbstractBond, Bond, NID, SID, FID, Index, OID, Hilbert, Phonon, Fock, Spin, CompositeInternal, SimpleIID
-using QuantumLattices: Couplings, Coupling, TermCouplings, TermAmplitude, TermModulate, Term, VectorSpace, VectorSpaceStyle, VectorSpaceCartesian, Table, Metric, CompositeOID
-using QuantumLattices: ⊕, ⊗, dimension, dtype, pidtype, rcoord, icoord, couplinginternals, totalspin, wildcard, atol, rtol
-using TightBindingApproximation: TBAKind, TBAMatrixRepresentation
-using SpinWaveTheory: MagneticStructure, LSWT
+using QuantumLattices: ID, Operator, AbstractPID, PID, Point, AbstractBond, Bond, Bonds, NID, SID, FID, Index, OID, Hilbert, Phonon, Fock, Spin, CompositeInternal, SimpleIID, Boundary, Generator
+using QuantumLattices: Lattice, Couplings, Coupling, TermCouplings, TermAmplitude, TermModulate, Term, VectorSpace, VectorSpaceStyle, VectorSpaceCartesian, Table, Metric, CompositeOID
+using QuantumLattices: ⊕, ⊗, dimension, dtype, pidtype, rcoord, icoord, couplinginternals, totalspin, wildcard, atol, rtol, plain
+using TightBindingApproximation: TBAKind, Phononic, TBAMatrixRepresentation
+using SpinWaveTheory: MagneticStructure, Magnonic, HPTransformation
 
 import LinearAlgebra: ishermitian
 import QuantumLattices: expand, shape, abbr, couplingcenters, optype, add!
 import TightBindingApproximation: commutator
+import SpinWaveTheory: LSWT
 
-export DMHybridization, @dmhybridization_str, MPHMetric
+export DMHybridization, @dmhybridization_str, MPHMetric, MagnonPhononCoupled, LSWT
 
 """
     expand(dmp::Coupling{<:Number, <:Tuple{NID{Symbol}, SID{wildcard, Int, Symbol}}}, bond::Bond, hilbert::Hilbert, info::Val{:DMHybridization}) -> DMPExpand
@@ -67,6 +68,19 @@ end
     Operator{valtype(T), Tuple{I₁, I₂}}
 end
 
+"""
+    MagnonPhononCoupled <: TBAKind{:BdG}
+
+Magnon-phonon coupled quantum lattice system.
+"""
+struct MagnonPhononCoupled <: TBAKind{:BdG} end
+
+"""
+    Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊕, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, magneticstructure::MagneticStructure) -> Hilbert
+    Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊗, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, magneticstructure::MagneticStructure) -> Hilbert
+
+Get the hilbert space after the Holstein-Primakoff transformation of a magnon-phonon coupled system.
+"""
 @inline function Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊕, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, magneticstructure::MagneticStructure)
     return Hilbert(pid=>filter(NID, hilbert[pid])⊕Fock{:b}(norbital=filter(SID, hilbert[pid]).norbital, nspin=1, nnambu=2) for pid in magneticstructure.cell.pids)
 end
@@ -74,6 +88,11 @@ end
     return Hilbert(pid=>filter(NID, hilbert[pid])⊗Fock{:b}(norbital=filter(SID, hilbert[pid]).norbital, nspin=1, nnambu=2) for pid in magneticstructure.cell.pids)
 end
 
+"""
+    MPHMetric <: Metric
+
+The metric of the operator indices of a magnon-phonon coupled system.
+"""
 struct MPHMetric <: Metric end
 @inline Base.valtype(::Type{MPHMetric}, ::Type{<:Index}) = NTuple{4, Int}
 function (::MPHMetric)(index::Index)
@@ -85,7 +104,19 @@ function (::MPHMetric)(index::Index)
         error("not supported index.")
     end
 end
-@inline Metric(::TBAKind{:BdG}, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}) where K = MPHMetric()
+
+"""
+    Metric(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}) where K -> MPHMetric
+
+Get the metric of a magnon-phonon coupled system.
+"""
+@inline Metric(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}) where K = MPHMetric()
+
+"""
+    Table(hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}, by::MPHMetric) where K -> Table
+
+Get the oid-sequence table of a magnon-phonon couple system after the Holstein-Primakoff transformation.
+"""
 function Table(hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}, by::MPHMetric) where K
     result = Index{keytype(hilbert), <:SimpleIID}[]
     for (pid, internal) in hilbert
@@ -98,21 +129,27 @@ function Table(hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Foc
     end
     return Table(result, by)
 end
-function commutator(k::TBAKind{:BdG}, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}) where K
-    m₁ = commutator(k, Hilbert(pid=>filter(FID, internal) for (pid, internal) in hilbert))
-    m₂ = commutator(k, Hilbert(pid=>filter(NID, internal) for (pid, internal) in hilbert))
+
+"""
+    commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}) where K
+
+Get the commutation relation of the Holstein-Primakoff bosons and phonons.
+"""
+function commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}}}) where K
+    m₁ = commutator(Magnonic(), Hilbert(pid=>filter(FID, internal) for (pid, internal) in hilbert))
+    m₂ = commutator(Phononic(), Hilbert(pid=>filter(NID, internal) for (pid, internal) in hilbert))
     result = zeros(Complex{Int}, size(m₁)[1]+size(m₂)[1], size(m₁)[1]+size(m₂)[1])
     result[1:size(m₁)[1], 1:size(m₁)[2]] = m₁
     result[(size(m₁)[1]+1):size(result)[1], (size(m₁)[2]+1):size(result)[2]] = -m₂
     return result
 end
 
-function add!(dest::Matrix,
-        mr::TBAMatrixRepresentation{<:LSWT},
-        m::Operator{<:Number, <:Tuple{CompositeOID{<:Index{PID, <:NID}}, CompositeOID{<:Index{PID, <:FID{:b}}}}};
-        atol=atol/5,
-        kwargs...
-        )
+"""
+    add!(dest::Matrix, mr::TBAMatrixRepresentation{<:LSWT}, m::Operator{<:Number, <:Tuple{CompositeOID{<:Index{PID, <:NID}}, CompositeOID{<:Index{PID, <:FID{:b}}}}}; atol=atol/5, kwargs...) -> typeof(dest)
+
+Get the matrix representation of an operator and add it to destination.
+"""
+function add!(dest::Matrix, mr::TBAMatrixRepresentation{<:LSWT}, m::Operator{<:Number, <:Tuple{CompositeOID{<:Index{PID, <:NID}}, CompositeOID{<:Index{PID, <:FID{:b}}}}}; atol=atol/5, kwargs...)
     coord = mr.gauge==:rcoord ? rcoord(m) : icoord(m)
     phase = isnothing(mr.k) ? one(eltype(dest)) : convert(eltype(dest), exp(-1im*dot(mr.k, coord)))
     seq₁ = mr.table[m[1].index]
@@ -120,6 +157,23 @@ function add!(dest::Matrix,
     dest[seq₁, seq₂] += m.value*phase
     dest[seq₂, seq₁] += m.value'*phase'
     return dest
+end
+
+"""
+    LSWT(lattice::Lattice, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, terms::Tuple{Vararg{Term}}, magneticstructure::MagneticStructure; boundary::Boundary=plain) where K
+
+Construct a LSWT for a magnon-phonon coupled system.
+"""
+@inline function LSWT(
+        lattice::Lattice,
+        hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}},
+        terms::Tuple{Vararg{Term}},
+        magneticstructure::MagneticStructure;
+        boundary::Boundary=plain
+        ) where K
+    H = Generator(terms, Bonds(magneticstructure.cell), hilbert; half=false, boundary=boundary)
+    hp = HPTransformation{valtype(H)}(magneticstructure)
+    return LSWT{MagnonPhononCoupled}(lattice, H, hp)
 end
 
 end # module
