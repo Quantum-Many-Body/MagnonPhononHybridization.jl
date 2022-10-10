@@ -40,7 +40,7 @@ end
         name=Symbol("Stacked-Honeycomb"),
         vectors=[[1.0, 0.0, 0.0]*a, [0.5, √3/2, 0.0]*a, [0.0, 0.0, 1.0]*c]
         )
-    neighbors=Neighbors(0=>0.0, 1=>√(a^2/3), 2=>a, 3=>√(4a^2/3), 4=>c)
+    neighbors=Neighbors(0=>0.0, 1=>√(a^2/3), 2=>a, 3=>√(4a^2/3), 4=>c/2)
     evenbond(bond) = all(point->iseven(point.site), bond) ? 1 : 0
     oddbond(bond) = all(point->isodd(point.site), bond) ? 1 : 0
     hilbertₘₚ = Hilbert(site=>Phonon(3)⊕Spin{2}() for site=1:length(lattice))
@@ -64,7 +64,7 @@ end
     update!(FMOAFMMP, Jxy₁=0.5742, JAxy₂=-0.06522, JBxy₂=-0.01386, Jxy₃=-0.2113, Δ₁=-3.745, Δ₂=-2.836)
     update!(FMOAFMMP, V₁=38.0, V₂₁=17.0, V₂₂=7.5, V₃=12.5, V₄=7.0, D=2.2)
     path = ReciprocalPath(lattice.reciprocals, (0, 0, 0)=>(2, 0, 0), length=400)
-    afmeb = FMOAFMMP(:EB, EnergyBands(path, collect(1:16)))
+    afmeb = FMOAFMMP(:EB, EnergyBands(path, collect(1:16); atol=10^-8))
     plt = plot(afmeb, xminorticks=10, yminorticks=10, minorgrid=true)
     ylims!(plt, 0.0, 16.0)
     display(plt)

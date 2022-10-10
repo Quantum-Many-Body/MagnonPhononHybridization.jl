@@ -146,11 +146,27 @@ function commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{
 end
 
 """
-    add!(dest::Matrix, mr::TBAMatrixRepresentation{<:LSWT}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; atol=atol/5, kwargs...) -> typeof(dest)
+    add!(dest::Matrix, mr::TBAMatrixRepresentation{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; atol=atol/5, kwargs...) -> typeof(dest)
+    add!(
+        dest::Matrix,
+        mr::TBAMatrixRepresentation{MagnonPhononCoupled},
+        m::Operator{<:Number, <:Union{Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}, Tuple{CompositeIndex{<:Index{Int, <:FID{:b}}}, CompositeIndex{<:Index{Int, <:PID}}}}};
+        atol=atol/5,
+        kwargs...
+    ) -> typeof(dest)
 
 Get the matrix representation of an operator and add it to destination.
 """
-function add!(dest::Matrix, mr::TBAMatrixRepresentation{<:LSWT}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; atol=atol/5, kwargs...)
+@inline function add!(dest::Matrix, mr::TBAMatrixRepresentation{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; atol=atol/5, kwargs...)
+    return add!(dest, TBAMatrixRepresentation{Magnonic, eltype(valtype(mr, m))}(mr.k, mr.table, mr.gauge), m; atol=atol, kwargs...)
+end
+function add!(
+    dest::Matrix,
+    mr::TBAMatrixRepresentation{MagnonPhononCoupled},
+    m::Operator{<:Number, <:Union{Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}, Tuple{CompositeIndex{<:Index{Int, <:FID{:b}}}, CompositeIndex{<:Index{Int, <:PID}}}}};
+    atol=atol/5,
+    kwargs...
+)
     coord = mr.gauge==:rcoordinate ? rcoordinate(m) : icoordinate(m)
     phase = isnothing(mr.k) ? one(eltype(dest)) : convert(eltype(dest), exp(1im*dot(mr.k, coord)))
     seq₁ = mr.table[m[1].index]
