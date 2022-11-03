@@ -63,7 +63,7 @@ end
     FMOAFMMP = Algorithm(:FMOAFMMP, LSWT(lattice, hilbertₘₚ, (Jxy₁, JAxy₂, JBxy₂, Jxy₃, Δ₁, Δ₂, T, V₁, V₂₁, V₂₂, V₃, V₄, D), magneticstructure; neighbors=neighbors))
     update!(FMOAFMMP, Jxy₁=0.5742, JAxy₂=-0.06522, JBxy₂=-0.01386, Jxy₃=-0.2113, Δ₁=-3.745, Δ₂=-2.836)
     update!(FMOAFMMP, V₁=38.0, V₂₁=17.0, V₂₂=7.5, V₃=12.5, V₄=7.0, D=2.2)
-    path = ReciprocalPath(lattice.reciprocals, (0, 0, 0)=>(2, 0, 0), length=400)
+    path = ReciprocalPath(reciprocals(lattice), (0, 0, 0)=>(2, 0, 0), length=400)
     afmeb = FMOAFMMP(:EB, EnergyBands(path, collect(1:16); atol=10^-8))
     plt = plot(afmeb, xminorticks=10, yminorticks=10, minorgrid=true)
     ylims!(plt, 0.0, 16.0)
