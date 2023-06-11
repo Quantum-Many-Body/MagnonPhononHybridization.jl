@@ -2,7 +2,7 @@
 
 julia_version = "1.9.0"
 manifest_format = "2.0"
-project_hash = "6044fa507b28a7aff46a9d3373ee104c4c3a9da8"
+project_hash = "71f32dbfc48d9d7cad73a2f9c7ace467dd69d3c4"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -503,9 +503,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.TightBindingApproximation]]
 deps = ["LinearAlgebra", "Optim", "Printf", "QuantumLattices", "RecipesBase", "TimerOutputs"]
-git-tree-sha1 = "c3356c614bfa98279d98ad1032669dac9d1cb9aa"
+git-tree-sha1 = "deeb17216ab9a1cf9d1f248bef8615a037b800e4"
 uuid = "d3576f78-cb9d-4774-9dc5-b247cf392ff4"
-version = "0.1.18"
+version = "0.1.19"
 
 [[deps.TimerOutputs]]
 deps = ["ExprTools", "Printf"]
