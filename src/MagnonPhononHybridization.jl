@@ -16,7 +16,21 @@ import QuantumLattices: add!, expand, optype, shape
 import SpinWaveTheory: LSWT
 import TightBindingApproximation: commutator
 
-export DMHybridization, LSWT, MagnonPhononCoupled, MPHMetric
+export DMHybridization, LSWT, MagnonPhonon, MagnonPhononCoupled, MPHMetric, SpinPhonon
+
+"""
+    SpinPhonon = Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}
+
+Internal spin-phonon space.
+"""
+const SpinPhonon = Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}
+
+"""
+    const MagnonPhonon = Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}
+
+Internal magnon-phonon space.
+"""
+const MagnonPhonon = Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}
 
 """
     expand(::Val{:DMHybridization}, dmp::Coupling{<:Number, Tuple{Index{Colon, PID{Colon}}, Index{Colon, SID{wildcard, Colon}}}}, bond::Bond, hilbert::Hilbert) -> DMPExpand
@@ -77,15 +91,15 @@ Magnon-phonon coupled quantum lattice system.
 struct MagnonPhononCoupled <: TBAKind{:BdG} end
 
 """
-    Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊕, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, magneticstructure::MagneticStructure) -> Hilbert
-    Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊗, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, magneticstructure::MagneticStructure) -> Hilbert
+    Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊕, <:SpinPhonon}}, magneticstructure::MagneticStructure) -> Hilbert
+    Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊗, <:SpinPhonon}}, magneticstructure::MagneticStructure) -> Hilbert
 
 Get the hilbert space after the Holstein-Primakoff transformation of a magnon-phonon coupled system.
 """
-@inline function Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊕, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, magneticstructure::MagneticStructure)
+@inline function Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊕, <:SpinPhonon}}, magneticstructure::MagneticStructure)
     return Hilbert(site=>filter(PID, hilbert[site])⊕Fock{:b}(1, 1) for site=1:length(magneticstructure.cell))
 end
-@inline function Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊗, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}}}, magneticstructure::MagneticStructure)
+@inline function Hilbert(hilbert::Hilbert{<:CompositeInternal{:⊗, <:SpinPhonon}}, magneticstructure::MagneticStructure)
     return Hilbert(site=>filter(PID, hilbert[site])⊗Fock{:b}(1, 1) for site=1:length(magneticstructure.cell))
 end
 
@@ -107,18 +121,18 @@ function (::MPHMetric)(index::Index)
 end
 
 """
-    Metric(::MagnonPhononCoupled, ::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}} where K}) -> MPHMetric
+    Metric(::MagnonPhononCoupled, ::Hilbert{<:CompositeInternal{K, <:MagnonPhonon} where K}) -> MPHMetric
 
 Get the metric of a magnon-phonon coupled system.
 """
-@inline Metric(::MagnonPhononCoupled, ::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}} where K}) = MPHMetric()
+@inline Metric(::MagnonPhononCoupled, ::Hilbert{<:CompositeInternal{K, <:MagnonPhonon} where K}) = MPHMetric()
 
 """
-    Table(hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}} where K}, by::MPHMetric) -> Table
+    Table(hilbert::Hilbert{<:CompositeInternal{K, <:MagnonPhonon} where K}, by::MPHMetric) -> Table
 
 Get the index-sequence table of a magnon-phonon couple system after the Holstein-Primakoff transformation.
 """
-function Table(hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}} where K}, by::MPHMetric)
+function Table(hilbert::Hilbert{<:CompositeInternal{K, <:MagnonPhonon} where K}, by::MPHMetric)
     result = Index{Int, <:SimpleIID}[]
     for (site, internal) in hilbert
         for iid in filter(PID, internal)
@@ -132,11 +146,11 @@ function Table(hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Foc
 end
 
 """
-    commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}} where K}) -> Matrix
+    commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:MagnonPhonon} where K}) -> Matrix
 
 Get the commutation relation of the Holstein-Primakoff bosons and phonons.
 """
-function commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Fock}, Tuple{Fock, Phonon}}} where K})
+function commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{K, <:MagnonPhonon} where K})
     m₁ = commutator(Magnonic(), Hilbert(site=>filter(FID, internal) for (site, internal) in hilbert))
     m₂ = commutator(Phononic(), Hilbert(site=>filter(PID, internal) for (site, internal) in hilbert))
     result = zeros(Complex{Int}, size(m₁)[1]+size(m₂)[1], size(m₁)[1]+size(m₂)[1])
@@ -179,25 +193,25 @@ end
 """
     LSWT(
         lattice::Lattice,
-        hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}} where K},
+        hilbert::Hilbert{<:CompositeInternal{K, <:SpinPhonon} where K},
         terms::Tuple{Vararg{Term}},
-        magneticstructure::MagneticStructure;
-        neighbors::Union{Nothing, Int, Neighbors}=nothing,
-        boundary::Boundary=plain
+        magneticstructure::MagneticStructure,
+        boundary::Boundary=plain;
+        neighbors::Union{Nothing, Int, Neighbors}=nothing
     )
 
 Construct a LSWT for a magnon-phonon coupled system.
 """
 @inline function LSWT(
     lattice::Lattice,
-    hilbert::Hilbert{<:CompositeInternal{K, <:Union{Tuple{Phonon, Spin}, Tuple{Spin, Phonon}}} where K},
+    hilbert::Hilbert{<:CompositeInternal{K, <:SpinPhonon} where K},
     terms::Tuple{Vararg{Term}},
-    magneticstructure::MagneticStructure;
-    neighbors::Union{Nothing, Int, Neighbors}=nothing,
-    boundary::Boundary=plain
+    magneticstructure::MagneticStructure,
+    boundary::Boundary=plain;
+    neighbors::Union{Nothing, Int, Neighbors}=nothing
 )
     isnothing(neighbors) && (neighbors=maximum(term->term.bondkind, terms))
-    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert; half=false, boundary=boundary)
+    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, boundary; half=false)
     hp = HPTransformation{valtype(H)}(magneticstructure)
     return LSWT{MagnonPhononCoupled}(lattice, H, hp)
 end
