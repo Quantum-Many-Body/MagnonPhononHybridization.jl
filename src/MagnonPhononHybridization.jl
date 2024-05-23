@@ -2,15 +2,15 @@ module MagnonPhononHybridization
 
 using LinearAlgebra: dot, norm
 using QuantumLattices: ⊕, ⊗, dimension, dtype
-using QuantumLattices: plain, wildcard, Boundary, CompositeIndex, CompositeInternal, Coupling, Hilbert, Index, Metric, SimpleIID, Table, Term, TermAmplitude, TermCoupling, TermModulate
-using QuantumLattices: OperatorGenerator
-using QuantumLattices: Operator
+using QuantumLattices: plain, wildcard, Boundary, CompositeIndex, CompositeInternal, Coupling, Hilbert, Index, Metric, SimpleIID, Table, Term, TermAmplitude, TermCoupling
+using QuantumLattices: lazy, OperatorGenerator
+using QuantumLattices: Operator, OperatorSum
 using QuantumLattices: FID, Fock, Phonon, PID, SID, Spin, totalspin
 using QuantumLattices: Bond, Lattice, Neighbors, Point, bonds, icoordinate, rcoordinate
 using QuantumLattices: atol, rtol, VectorSpace, VectorSpaceCartesian, VectorSpaceStyle
 using SpinWaveTheory: HPTransformation, MagneticStructure, Magnonic
 using StaticArrays: SVector
-using TightBindingApproximation: Phononic, TBAKind, TBAMatrixRepresentation
+using TightBindingApproximation: Phononic, Quadratic, QuadraticFormalize, TBAKind, TBAMatrixRepresentation
 
 import QuantumLattices: add!, expand, optype, shape
 import SpinWaveTheory: LSWT
@@ -62,19 +62,19 @@ function Operator(index::CartesianIndex{4}, dmp::DMPExpand{S}) where S
 end
 
 """
-    DMHybridization(id::Symbol, value, bondkind; amplitude::Union{Function, Nothing}=nothing, modulate::Union{Function, Bool}=true)
+    DMHybridization(id::Symbol, value, bondkind; amplitude::Union{Function, Nothing}=nothing, ismodulatable::Union{Function, Bool}=true)
 
 The DM Magnon-Phonon coupling term.
 
-Type alias for `Term{:DMHybridization, id, V, B, C<:TermCoupling, A<:TermAmplitude, M<:TermModulate}`
+Type alias for `Term{:DMHybridization, id, V, B, C<:TermCoupling, A<:TermAmplitude}`
 """
-const DMHybridization{id, V, B, C<:TermCoupling, A<:TermAmplitude, M<:TermModulate} = Term{:DMHybridization, id, V, B, C, A, M}
+const DMHybridization{id, V, B, C<:TermCoupling, A<:TermAmplitude} = Term{:DMHybridization, id, V, B, C, A}
 @inline function DMHybridization(
     id::Symbol, value, bondkind;
     amplitude::Union{Function, Nothing}=nothing,
-    modulate::Union{Function, Bool}=true
+    ismodulatable::Bool=true
 )
-    return Term{:DMHybridization}(id, value, bondkind, Coupling(Index(:, PID('u', :)), Index(:, SID(:))), true; amplitude=amplitude, modulate=modulate)
+    return Term{:DMHybridization}(id, value, bondkind, Coupling(Index(:, PID('u', :)), Index(:, SID(:))), true; amplitude=amplitude, ismodulatable=ismodulatable)
 end
 @inline function optype(T::Type{<:Term{:DMHybridization}}, H::Type{<:Hilbert}, B::Type{<:Bond})
     V = SVector{dimension(eltype(B)), dtype(eltype(B))}
@@ -160,33 +160,19 @@ function commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{
 end
 
 """
-    add!(dest::Matrix, mr::TBAMatrixRepresentation{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; atol=atol/5, kwargs...) -> typeof(dest)
-    add!(
-        dest::Matrix,
-        mr::TBAMatrixRepresentation{MagnonPhononCoupled},
-        m::Operator{<:Number, <:Union{Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}, Tuple{CompositeIndex{<:Index{Int, <:FID{:b}}}, CompositeIndex{<:Index{Int, <:PID}}}}};
-        atol=atol/5,
-        kwargs...
-    ) -> typeof(dest)
+    add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)-> typeof(dest)
+    add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...) -> typeof(dest)
 
 Get the matrix representation of an operator and add it to destination.
 """
-@inline function add!(dest::Matrix, mr::TBAMatrixRepresentation{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; atol=atol/5, kwargs...)
-    return add!(dest, TBAMatrixRepresentation{Magnonic, eltype(valtype(mr, m))}(mr.k, mr.table, mr.gauge), m; atol=atol, kwargs...)
+function add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
+    return add!(dest, QuadraticFormalize{Magnonic, valtype(eltype(valtype(qf, m)))}(qf.table), m; kwargs...)
 end
-function add!(
-    dest::Matrix,
-    mr::TBAMatrixRepresentation{MagnonPhononCoupled},
-    m::Operator{<:Number, <:Union{Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}, Tuple{CompositeIndex{<:Index{Int, <:FID{:b}}}, CompositeIndex{<:Index{Int, <:PID}}}}};
-    atol=atol/5,
-    kwargs...
-)
-    coord = mr.gauge==:rcoordinate ? rcoordinate(m) : icoordinate(m)
-    phase = isnothing(mr.k) ? one(eltype(dest)) : convert(eltype(dest), exp(1im*dot(mr.k, coord)))
-    seq₁ = mr.table[m[1].index]
-    seq₂ = mr.table[m[2].index]
-    dest[seq₁, seq₂] += m.value*phase
-    dest[seq₂, seq₁] += m.value'*phase'
+function add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
+    seq₁, seq₂ = qf.table[m[1]], qf.table[m[2]]
+    rcoord, icoord = rcoordinate(m), icoordinate(m)
+    add!(dest, Quadratic(m.value, (seq₁, seq₂), rcoord, icoord))
+    add!(dest, Quadratic(m.value', (seq₂, seq₁), -rcoord, -icoord))
     return dest
 end
 
@@ -211,7 +197,7 @@ Construct a LSWT for a magnon-phonon coupled system.
     neighbors::Union{Nothing, Int, Neighbors}=nothing
 )
     isnothing(neighbors) && (neighbors=maximum(term->term.bondkind, terms))
-    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, boundary; half=false)
+    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, boundary, nothing, lazy; half=false)
     hp = HPTransformation{valtype(H)}(magneticstructure)
     return LSWT{MagnonPhononCoupled}(lattice, H, hp)
 end
