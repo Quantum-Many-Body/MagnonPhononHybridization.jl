@@ -166,7 +166,7 @@ end
 Get the matrix representation of an operator and add it to destination.
 """
 function add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
-    return add!(dest, QuadraticFormalize{Magnonic, valtype(eltype(valtype(qf, m)))}(qf.table), m; kwargs...)
+    return add!(dest, QuadraticFormalize{Magnonic}(qf.table), m; kwargs...)
 end
 function add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
     seq₁, seq₂ = qf.table[m[1]], qf.table[m[2]]
