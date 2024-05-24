@@ -197,7 +197,7 @@ Construct a LSWT for a magnon-phonon coupled system.
     neighbors::Union{Nothing, Int, Neighbors}=nothing
 )
     isnothing(neighbors) && (neighbors=maximum(term->term.bondkind, terms))
-    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, boundary, nothing, lazy; half=false)
+    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, boundary, lazy; half=false)
     hp = HPTransformation{valtype(H)}(magneticstructure)
     return LSWT{MagnonPhononCoupled}(lattice, H, hp)
 end
