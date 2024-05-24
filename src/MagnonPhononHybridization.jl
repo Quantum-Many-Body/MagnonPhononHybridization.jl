@@ -2,7 +2,7 @@ module MagnonPhononHybridization
 
 using LinearAlgebra: dot, norm
 using QuantumLattices: ⊕, ⊗, dimension, dtype
-using QuantumLattices: plain, wildcard, Boundary, CompositeIndex, CompositeInternal, Coupling, Hilbert, Index, Metric, SimpleIID, Table, Term, TermAmplitude, TermCoupling
+using QuantumLattices: plain, wildcard, CompositeIndex, CompositeInternal, Coupling, Hilbert, Index, Metric, SimpleIID, Table, Term, TermAmplitude, TermCoupling
 using QuantumLattices: lazy, OperatorGenerator
 using QuantumLattices: Operator, OperatorSum
 using QuantumLattices: FID, Fock, Phonon, PID, SID, Spin, totalspin
@@ -181,8 +181,7 @@ end
         lattice::Lattice,
         hilbert::Hilbert{<:CompositeInternal{K, <:SpinPhonon} where K},
         terms::Tuple{Vararg{Term}},
-        magneticstructure::MagneticStructure,
-        boundary::Boundary=plain;
+        magneticstructure::MagneticStructure;
         neighbors::Union{Nothing, Int, Neighbors}=nothing
     )
 
@@ -192,12 +191,11 @@ Construct a LSWT for a magnon-phonon coupled system.
     lattice::Lattice,
     hilbert::Hilbert{<:CompositeInternal{K, <:SpinPhonon} where K},
     terms::Tuple{Vararg{Term}},
-    magneticstructure::MagneticStructure,
-    boundary::Boundary=plain;
+    magneticstructure::MagneticStructure;
     neighbors::Union{Nothing, Int, Neighbors}=nothing
 )
     isnothing(neighbors) && (neighbors=maximum(term->term.bondkind, terms))
-    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, boundary, lazy; half=false)
+    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, plain, lazy; half=false)
     hp = HPTransformation{valtype(H)}(magneticstructure)
     return LSWT{MagnonPhononCoupled}(lattice, H, hp)
 end
