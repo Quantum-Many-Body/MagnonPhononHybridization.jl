@@ -76,9 +76,9 @@ version = "0.3.0"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
-git-tree-sha1 = "c955881e3c981181362ae4088b35995446298b80"
+git-tree-sha1 = "b1c55339b7c6c350ee89f2c1604299660525b248"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.14.0"
+version = "4.15.0"
 weakdeps = ["Dates", "LinearAlgebra"]
 
     [deps.Compat.extensions]
@@ -162,9 +162,9 @@ version = "0.9.3"
 
 [[deps.Documenter]]
 deps = ["ANSIColoredPrinters", "AbstractTrees", "Base64", "CodecZlib", "Dates", "DocStringExtensions", "Downloads", "Git", "IOCapture", "InteractiveUtils", "JSON", "LibGit2", "Logging", "Markdown", "MarkdownAST", "Pkg", "PrecompileTools", "REPL", "RegistryInstances", "SHA", "TOML", "Test", "Unicode"]
-git-tree-sha1 = "f15a91e6e3919055efa4f206f942a73fedf5dfe6"
+git-tree-sha1 = "5461b2a67beb9089980e2f8f25145186b6d34f91"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "1.4.0"
+version = "1.4.1"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
@@ -173,9 +173,9 @@ version = "1.6.0"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "4558ab818dcceaab612d1bb8c19cee87eda2b83c"
+git-tree-sha1 = "1c6317308b9dc757616f0b5cb379db10494443a7"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
-version = "2.5.0+0"
+version = "2.6.2+0"
 
 [[deps.ExprTools]]
 git-tree-sha1 = "27415f162e6028e81c72b82ef756bf321213b6ec"
@@ -187,9 +187,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "bfe82a708416cf00b73a3198db0859c82f741558"
+git-tree-sha1 = "0653c0a2396a6da5bc4766c43041ef5fd3efbe57"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.10.0"
+version = "1.11.0"
 
     [deps.FillArrays.extensions]
     FillArraysPDMatsExt = "PDMats"
@@ -371,7 +371,7 @@ version = "0.5.13"
 deps = ["LinearAlgebra", "QuantumLattices", "SpinWaveTheory", "StaticArrays", "TightBindingApproximation"]
 path = ".."
 uuid = "83eb1d98-e19b-4996-92b4-3414e1382055"
-version = "0.1.4"
+version = "0.1.5"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -508,9 +508,9 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[deps.QuantumLattices]]
 deps = ["DataStructures", "DelimitedFiles", "Format", "LaTeXStrings", "Latexify", "LinearAlgebra", "NearestNeighbors", "Printf", "Random", "RecipesBase", "Serialization", "SparseArrays", "StaticArrays", "TimerOutputs"]
-git-tree-sha1 = "f0df9751d525f80acd556e45e5248df12d39d8b3"
+git-tree-sha1 = "a527aa8bd903b68d7dcb78c63577c9a16e09c818"
 uuid = "78ae1a1f-1d5d-5174-b61c-66e31b2346dc"
-version = "0.9.14"
+version = "0.9.15"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -567,9 +567,9 @@ version = "1.10.0"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
-git-tree-sha1 = "e2cfc4012a19088254b3950b85c3c1d8882d864d"
+git-tree-sha1 = "2f5d4697f21388cbe1ff299430dd169ef97d7e14"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
-version = "2.3.1"
+version = "2.4.0"
 
     [deps.SpecialFunctions.extensions]
     SpecialFunctionsChainRulesCoreExt = "ChainRulesCore"
@@ -579,15 +579,15 @@ version = "2.3.1"
 
 [[deps.SpinWaveTheory]]
 deps = ["LinearAlgebra", "QuantumLattices", "StaticArrays", "TightBindingApproximation", "TimerOutputs"]
-git-tree-sha1 = "888a5b8cc7d7ee887c1aabc414fa784b65431ed1"
+git-tree-sha1 = "9132528c2832c2aa1cb7a5eb175abd5eeebea462"
 uuid = "0f33b1d1-764a-4710-8fd7-79355e2c9255"
-version = "0.1.12"
+version = "0.1.13"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
-git-tree-sha1 = "bf074c045d3d5ffd956fa0a461da38a44685d6b2"
+git-tree-sha1 = "9ae599cd7529cfce7fea36cf00a62cfc56f0f37c"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.9.3"
+version = "1.9.4"
 
     [deps.StaticArrays.extensions]
     StaticArraysChainRulesCoreExt = "ChainRulesCore"
@@ -644,20 +644,20 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.TightBindingApproximation]]
 deps = ["LinearAlgebra", "Optim", "Printf", "QuantumLattices", "RecipesBase", "TimerOutputs"]
-git-tree-sha1 = "54991beecc7cd8129b3529eeee58dcb34383a834"
+git-tree-sha1 = "8ccdba1bc8cd2aa2d5208b3b1dce411afb25f491"
 uuid = "d3576f78-cb9d-4774-9dc5-b247cf392ff4"
-version = "0.1.21"
+version = "0.1.22"
 
 [[deps.TimerOutputs]]
 deps = ["ExprTools", "Printf"]
-git-tree-sha1 = "f548a9e9c490030e545f72074a41edfd0e5bcdd7"
+git-tree-sha1 = "5a13ae8a41237cff5ecf34f73eb1b8f42fff6531"
 uuid = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
-version = "0.5.23"
+version = "0.5.24"
 
 [[deps.TranscodingStreams]]
-git-tree-sha1 = "71509f04d045ec714c4748c785a59045c3736349"
+git-tree-sha1 = "5d54d076465da49d6746c647022f3b3674e64156"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.10.7"
+version = "0.10.8"
 weakdeps = ["Random", "Test"]
 
     [deps.TranscodingStreams.extensions]
