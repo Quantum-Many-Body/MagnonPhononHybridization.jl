@@ -1,16 +1,12 @@
 module MagnonPhononHybridization
 
 using LinearAlgebra: dot, norm
-using QuantumLattices: ⊕, ⊗, dimension, dtype
-using QuantumLattices: plain, wildcard, CompositeIndex, CompositeInternal, Coupling, Hilbert, Index, Metric, SimpleIID, Table, Term, TermAmplitude, TermCoupling
-using QuantumLattices: lazy, OperatorGenerator
-using QuantumLattices: Operator, OperatorSum
-using QuantumLattices: FID, Fock, Phonon, PID, SID, Spin, totalspin
-using QuantumLattices: Bond, Lattice, Neighbors, Point, bonds, icoordinate, rcoordinate
-using QuantumLattices: atol, rtol, VectorSpace, VectorSpaceCartesian, VectorSpaceStyle
+using QuantumLattices: atol, lazy, plain, rtol, wildcard
+using QuantumLattices: Bond, CompositeIndex, CompositeInternal, Coupling, FID, Fock, Hilbert, Index, Lattice, Metric, Neighbors, Operator, OperatorGenerator, OperatorSum, Phonon, PID, Point, SID, SimpleIID, Spin, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceCartesian, VectorSpaceStyle
+using QuantumLattices: ⊕, ⊗, bonds, dimension, dtype, icoordinate, rcoordinate, totalspin
 using SpinWaveTheory: HPTransformation, MagneticStructure, Magnonic
 using StaticArrays: SVector
-using TightBindingApproximation: Phononic, Quadratic, QuadraticFormalize, TBAKind, TBAMatrixRepresentation
+using TightBindingApproximation: Phononic, Quadratic, Quadraticization, TBAKind
 
 import QuantumLattices: add!, expand, optype, shape
 import SpinWaveTheory: LSWT
@@ -160,15 +156,15 @@ function commutator(::MagnonPhononCoupled, hilbert::Hilbert{<:CompositeInternal{
 end
 
 """
-    add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)-> typeof(dest)
-    add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...) -> typeof(dest)
+    add!(dest::OperatorSum, qf::Quadraticization{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)-> typeof(dest)
+    add!(dest::OperatorSum, qf::Quadraticization{MagnonPhononCoupled}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...) -> typeof(dest)
 
 Get the matrix representation of an operator and add it to destination.
 """
-function add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
-    return add!(dest, QuadraticFormalize{Magnonic}(qf.table), m; kwargs...)
+function add!(dest::OperatorSum, qf::Quadraticization{MagnonPhononCoupled}, m::Operator{<:Number, <:NTuple{2, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
+    return add!(dest, Quadraticization{Magnonic}(qf.table), m; kwargs...)
 end
-function add!(dest::OperatorSum, qf::QuadraticFormalize{MagnonPhononCoupled}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
+function add!(dest::OperatorSum, qf::Quadraticization{MagnonPhononCoupled}, m::Operator{<:Number, <:Tuple{CompositeIndex{<:Index{Int, <:PID}}, CompositeIndex{<:Index{Int, <:FID{:b}}}}}; kwargs...)
     seq₁, seq₂ = qf.table[m[1]], qf.table[m[2]]
     rcoord, icoord = rcoordinate(m), icoordinate(m)
     add!(dest, Quadratic(m.value, (seq₁, seq₂), rcoord, icoord))
