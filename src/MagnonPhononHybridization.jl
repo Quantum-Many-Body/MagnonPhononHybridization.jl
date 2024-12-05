@@ -71,8 +71,6 @@ const DMHybridization{id, V, B, C<:TermCoupling, A<:TermAmplitude} = Term{:DMHyb
     ismodulatable::Bool=true
 )
     return Term{:DMHybridization}(id, value, bondkind, Coupling(@pattern(𝕦(:, α), 𝕊(:, β))), true; amplitude=amplitude, ismodulatable=ismodulatable)
-    # return Term{:DMHybridization}(id, value, bondkind, Coupling(𝕦(:, :), 𝕊(:, :)), true; amplitude=amplitude, ismodulatable=ismodulatable)
-    # return Term{:DMHybridization}(id, value, bondkind, Coupling(Pattern((:, :), InternalPattern(𝕦(:)⊗ 𝕊(:), (args...)->true))), true; amplitude=amplitude, ismodulatable=ismodulatable)
 end
 @inline function optype(::Type{T}, ::Type{H}, ::Type{B}) where {T<:Term{:DMHybridization}, H<:Hilbert, B<:Bond}
     V = SVector{dimension(eltype(B)), dtype(eltype(B))}
@@ -113,10 +111,8 @@ function (::MPHMetric)(index::Index{<:Union{PhononIndex, FockIndex{:b}}})
         return (1, index.internal.nambu, 1, index.site)
     elseif isa(index.internal, PhononIndex{:u})
         return (2, -Int('u'), index.site, Int(index.internal.direction))
-    elseif isa(index.internal, PhononIndex{:p})
-        return (2, -Int('p'), index.site, Int(index.internal.direction))
     else
-        error("not supported index.")
+        return (2, -Int('p'), index.site, Int(index.internal.direction))
     end
 end
 

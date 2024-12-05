@@ -4,7 +4,7 @@ using QuantumLattices
 using SpinWaveTheory
 using TightBindingApproximation
 
-@testset "MagnonPhononHybridization.jl" begin
+@time @testset "MagnonPhononHybridization.jl" begin
     term = DMHybridization(:dmp, 2.0, 1)
     bond = Bond(1, Point(2, [0.5, 0.5], [0.0, 0.0]), Point(1, [0.0, 0.0], [0.0, 0.0]))
     operators = Operators(
@@ -31,7 +31,42 @@ using TightBindingApproximation
     @test expand(term, bond, Hilbert(site=>Spin{1//2}()⊗Phonon(2) for site in [bond[1].site, bond[2].site])) ≈ operators
 end
 
-@testset "plot" begin
+@time @testset "utilities" begin
+    lattice = Lattice([0.0, 0.0], [1.0, 0.0]; vectors=[[1.0, 1.0], [1.0, -1.0]])
+    magneticstructure = MagneticStructure(lattice, Dict(site=>iseven(site) ? [0, 0, 1] : [0, 0, -1] for site=1:length(lattice)))
+    @test Hilbert(Hilbert(Phonon(2)⊕Spin{2}(), length(lattice)), magneticstructure) == Hilbert(Phonon(2)⊕Fock{:b}(1, 1), length(lattice))
+    @test Hilbert(Hilbert(Phonon(2)⊗Spin{2}(), length(lattice)), magneticstructure) == Hilbert(Phonon(2)⊗Fock{:b}(1, 1), length(lattice))
+
+    hilbert = Hilbert(Hilbert(Phonon(2)⊗Spin{2}(), length(lattice)), magneticstructure)
+    metric = Metric(MagnonPhononCoupled(), hilbert)
+    @test valtype(typeof(metric), Index) == NTuple{4, Int}
+    @test Table(hilbert, metric) == Table(
+        [   𝕦(1, 'x'), 𝕦(1, 'y'), 𝕦(2, 'x'), 𝕦(2, 'y'),
+            𝕡(1, 'x'), 𝕡(1, 'y'), 𝕡(2, 'x'), 𝕡(2, 'y'),
+            𝕓(1, 1, 1, 1), 𝕓(1, 1, 1, 2), 𝕓(2, 1, 1, 1), 𝕓(2, 1, 1, 2)
+        ],
+        metric
+    )
+
+    @test commutator(MagnonPhononCoupled(), hilbert) == [
+        1 0 0 0    0 0 0 0     0 0 0 0;
+        0 1 0 0    0 0 0 0     0 0 0 0;
+        0 0 -1 0    0 0 0 0     0 0 0 0;
+        0 0 0 -1    0 0 0 0     0 0 0 0;
+       
+        0 0 0 0    0 0 0 0     1im 0 0 0;
+        0 0 0 0    0 0 0 0     0 1im 0 0;
+        0 0 0 0    0 0 0 0     0 0 1im 0;
+        0 0 0 0    0 0 0 0     0 0 0 1im;
+       
+        0 0 0 0    -1im 0 0 0  0 0 0 0;
+        0 0 0 0    0 -1im 0 0  0 0 0 0;
+        0 0 0 0    0 0 -1im 0  0 0 0 0;
+        0 0 0 0    0 0 0 -1im  0 0 0 0;
+    ]
+end
+
+@time @testset "plot" begin
     a = 5.773
     c = 10.057
 
