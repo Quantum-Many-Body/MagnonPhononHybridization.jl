@@ -15,6 +15,10 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Examples" => [
+            "examples/TopologicalMagnonPolarons.md",
+        ],
+        "Manual" => "manual.md",
     ],
 )
 
