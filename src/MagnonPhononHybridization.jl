@@ -1,6 +1,6 @@
 module MagnonPhononHybridization
 
-using LinearAlgebra: dot, norm
+using LinearAlgebra: norm
 using QuantumLattices: atol, lazy, plain, rtol
 using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalPattern, InternalProd, InternalSum, Lattice, Metric, Neighbors, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceCartesian, VectorSpaceStyle
 using QuantumLattices: ⊕, ⊗, 𝕊, 𝕦, bonds, dimension, dtype, icoordinate, rcoordinate, totalspin, @pattern
