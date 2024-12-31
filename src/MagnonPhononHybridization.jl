@@ -2,13 +2,13 @@ module MagnonPhononHybridization
 
 using LinearAlgebra: norm
 using QuantumLattices: atol, lazy, plain, rtol
-using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalPattern, InternalProd, InternalSum, Lattice, Metric, Neighbors, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceCartesian, VectorSpaceStyle
-using QuantumLattices: ⊕, ⊗, 𝕊, 𝕦, bonds, dimension, dtype, icoordinate, rcoordinate, totalspin, @pattern
+using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalPattern, InternalProd, InternalSum, Lattice, Metric, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceCartesian, VectorSpaceStyle
+using QuantumLattices: ⊕, ⊗, 𝕊, 𝕦, bonds, dimension, icoordinate, nneighbor, rcoordinate, scalartype, totalspin, @pattern
 using SpinWaveTheory: HolsteinPrimakoff, MagneticStructure, Magnonic
 using StaticArrays: SVector
 using TightBindingApproximation: Phononic, Quadratic, Quadraticization, TBAKind
 
-import QuantumLattices: add!, expand, optype, shape
+import QuantumLattices: add!, expand, operatortype, shape
 import SpinWaveTheory: LSWT
 import TightBindingApproximation: commutator
 
@@ -72,8 +72,8 @@ const DMHybridization{id, V, B, C<:TermCoupling, A<:TermAmplitude} = Term{:DMHyb
 )
     return Term{:DMHybridization}(id, value, bondkind, Coupling(@pattern(𝕦(:, α), 𝕊(:, β))), true; amplitude=amplitude, ismodulatable=ismodulatable)
 end
-@inline function optype(::Type{T}, ::Type{H}, ::Type{B}) where {T<:Term{:DMHybridization}, H<:Hilbert, B<:Bond}
-    V = SVector{dimension(eltype(B)), dtype(eltype(B))}
+@inline function operatortype(::Type{T}, ::Type{H}, ::Type{B}) where {T<:Term{:DMHybridization}, H<:Hilbert, B<:Bond}
+    V = SVector{dimension(eltype(B)), scalartype(eltype(B))}
     I₁ = CoordinatedIndex{Index{PhononIndex{:u, Char}, Int}, V}
     I₂ = CoordinatedIndex{Index{SpinIndex{totalspin(filter(SpinIndex, valtype(H))), Char}, Int}, V}
     Operator{valtype(T), Tuple{I₁, I₂}}
@@ -179,9 +179,9 @@ end
     LSWT(
         lattice::Lattice,
         hilbert::Hilbert{<:CompositeInternal{<:SpinPhonon}},
-        terms::Tuple{Vararg{Term}},
+        terms::OneOrMore{Term},
         magneticstructure::MagneticStructure;
-        neighbors::Union{Nothing, Int, Neighbors}=nothing
+        neighbors::Union{Int, Neighbors}=nneighbor(terms)
     )
 
 Construct a LSWT for a magnon-phonon coupled system.
@@ -189,12 +189,11 @@ Construct a LSWT for a magnon-phonon coupled system.
 @inline function LSWT(
     lattice::Lattice,
     hilbert::Hilbert{<:CompositeInternal{<:SpinPhonon}},
-    terms::Tuple{Vararg{Term}},
+    terms::OneOrMore{Term},
     magneticstructure::MagneticStructure;
-    neighbors::Union{Nothing, Int, Neighbors}=nothing
+    neighbors::Union{Int, Neighbors}=nneighbor(terms)
 )
-    isnothing(neighbors) && (neighbors=maximum(term->term.bondkind, terms))
-    H = OperatorGenerator(terms, bonds(magneticstructure.cell, neighbors), hilbert, plain, lazy; half=false)
+    H = OperatorGenerator(bonds(magneticstructure.cell, neighbors), hilbert, terms, plain, lazy; half=false)
     hp = HolsteinPrimakoff{valtype(H)}(magneticstructure)
     return LSWT{MagnonPhononCoupled}(lattice, H, hp)
 end
