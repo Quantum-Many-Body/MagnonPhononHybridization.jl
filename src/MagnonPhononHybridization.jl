@@ -72,7 +72,7 @@ const DMHybridization{id, V, B, C<:TermCoupling, A<:TermAmplitude} = Term{:DMHyb
 )
     return Term{:DMHybridization}(id, value, bondkind, Coupling(@pattern(𝕦(:, α), 𝕊(:, β))), true; amplitude=amplitude, ismodulatable=ismodulatable)
 end
-@inline function operatortype(::Type{T}, ::Type{H}, ::Type{B}) where {T<:Term{:DMHybridization}, H<:Hilbert, B<:Bond}
+@inline function operatortype(::Type{B}, ::Type{H}, ::Type{T}) where {B<:Bond, H<:Hilbert, T<:Term{:DMHybridization}}
     V = SVector{dimension(eltype(B)), scalartype(eltype(B))}
     I₁ = CoordinatedIndex{Index{PhononIndex{:u, Char}, Int}, V}
     I₂ = CoordinatedIndex{Index{SpinIndex{totalspin(filter(SpinIndex, valtype(H))), Char}, Int}, V}
