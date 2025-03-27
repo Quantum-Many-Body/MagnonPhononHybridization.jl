@@ -2,7 +2,7 @@ module MagnonPhononHybridization
 
 using LinearAlgebra: norm
 using QuantumLattices: atol, lazy, plain, rtol
-using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalPattern, InternalProd, InternalSum, Lattice, Metric, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceCartesian, VectorSpaceStyle
+using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalPattern, InternalProd, InternalSum, Lattice, Metric, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceDirectProducted, VectorSpaceStyle
 using QuantumLattices: ⊕, ⊗, 𝕊, 𝕦, bonds, dimension, icoordinate, nneighbor, rcoordinate, scalartype, totalspin, @pattern
 using SpinWaveTheory: HolsteinPrimakoff, MagneticStructure, Magnonic
 using StaticArrays: SVector
@@ -48,7 +48,7 @@ struct DMPExpand{S, V<:Number, D} <: VectorSpace{Operator{V, Tuple{CoordinatedIn
     points::NTuple{2, Point{D, V}}
     DMPExpand{S}(value::Number, direction::SVector{D}, points::NTuple{2, Point}) where {S, D} = new{S, typeof(value), D}(value, direction, points)
 end
-@inline VectorSpaceStyle(::Type{<:DMPExpand}) = VectorSpaceCartesian()
+@inline VectorSpaceStyle(::Type{<:DMPExpand}) = VectorSpaceDirectProducted(:forward)
 @inline shape(dmp::DMPExpand) = (1:2, 1:2, 1:2, 1:2)
 @inline function Base.convert(::Type{<:Operator}, index::CartesianIndex{4}, dmp::DMPExpand{S}) where S
     coeff = (-dmp.direction[index[1]]*dmp.direction[index[2]]+(index[1]==index[2] ? 1 : 0))*(index[3]==1 ? 1 : -1)
