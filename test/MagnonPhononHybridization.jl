@@ -97,7 +97,7 @@ end
 
     FMOAFMMP = Algorithm(:FMOAFMMP, LSWT(lattice, hilbertₘₚ, (Jxy₁, JAxy₂, JBxy₂, Jxy₃, Δ₁, Δ₂, h, T, V₁, V₂₁, V₂₂, V₃, V₄, D), magneticstructure; neighbors=neighbors))
     path = ReciprocalPath(reciprocals(lattice), (0, 0, 0)=>(2, 0, 0), length=400)
-    afmeb = FMOAFMMP(:EB, EnergyBands(path, 1:16; tol=10^-6))
+    afmeb = FMOAFMMP(:EB, EnergyBands(path, 1:16); tol=10^-6)
     plt = plot(afmeb, xminorticks=10, yminorticks=10, minorgrid=true)
     ylims!(plt, 0.0, 16.0)
     display(plt)

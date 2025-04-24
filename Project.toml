@@ -1,7 +1,7 @@
 name = "MagnonPhononHybridization"
 uuid = "83eb1d98-e19b-4996-92b4-3414e1382055"
 authors = ["waltergu <waltergu1989@gmail.com> and contributors"]
-version = "0.2.3"
+version = "0.2.4"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -12,8 +12,8 @@ TightBindingApproximation = "d3576f78-cb9d-4774-9dc5-b247cf392ff4"
 
 [compat]
 LinearAlgebra = "1.10 - 1"
-QuantumLattices = "0.12.0"
-SpinWaveTheory = "0.2.2"
+QuantumLattices = "0.12.1"
+SpinWaveTheory = "0.2.3"
 StaticArrays = "1.4 - 1"
-TightBindingApproximation = "0.3.0"
+TightBindingApproximation = "0.3.1"
 julia = "1.10 - 1.11"

@@ -51,7 +51,7 @@ Fe₂Mo₃O₈ = Algorithm(
     )
 )
 path = ReciprocalPath(reciprocals(lattice), hexagon"Γ-M-Γ-K₁-K₂-Γ", length=400)
-afmeb = Fe₂Mo₃O₈(:EB, EnergyBands(path, 3:6; tol=10^-6))
+afmeb = Fe₂Mo₃O₈(:EB, EnergyBands(path, 3:6); tol=10^-6)
 plot(
     afmeb;
     xminorticks=10, yminorticks=10, minorgrid=true, title="Magnon-Polaron Bands in Fe₂Mo₃O₈"
