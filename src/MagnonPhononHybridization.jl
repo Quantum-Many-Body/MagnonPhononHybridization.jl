@@ -2,7 +2,7 @@ module MagnonPhononHybridization
 
 using LinearAlgebra: norm
 using QuantumLattices: atol, lazy, plain, rtol
-using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalPattern, InternalProd, InternalSum, Lattice, Metric, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceDirectProducted, VectorSpaceStyle
+using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalProd, InternalSum, Lattice, Metric, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceDirectProducted, VectorSpaceStyle
 using QuantumLattices: ⊕, ⊗, 𝕊, 𝕦, bonds, dimension, icoordinate, nneighbor, rcoordinate, scalartype, totalspin, @pattern
 using SpinWaveTheory: HolsteinPrimakoff, MagneticStructure, Magnonic
 using StaticArrays: SVector
@@ -29,15 +29,15 @@ Internal magnon-phonon space.
 const MagnonPhonon = Union{Tuple{Phonon, Fock{:b}}, Tuple{Fock{:b}, Phonon}}
 
 """
-    expand(dmp::Coupling{<:Number, <:Pattern{<:NTuple{2, Colon}, <:InternalPattern{(2,), <:Tuple{PhononIndex{:u}, SpinIndex}}}}, ::Val{:DMHybridization}, bond::Bond, hilbert::Hilbert) -> DMPExpand
+    expand(dmp::Coupling{<:Number, <:Pattern{<:Tuple{Index{<:PhononIndex{:u}}, Index{<:SpinIndex}}}}, ::Val{:DMHybridization}, bond::Bond, hilbert::Hilbert) -> DMPExpand
 
 Expand the default DM magnon-phonon coupling on a given bond.
 """
-function expand(dmp::Coupling{<:Number, <:Pattern{<:InternalPattern{<:Tuple{PhononIndex{:u}, SpinIndex}}}}, ::Val{:DMHybridization}, bond::Bond, hilbert::Hilbert)
-    @assert isa(dmp.pattern.sites, NTuple{2, Colon}) "expand error: the `:sites` attributes of the DMHybridization coupling pattern must be a 2-tuple of colons."
+function expand(dmp::Coupling{<:Number, <:Pattern{<:Tuple{Index{<:PhononIndex{:u}}, Index{<:SpinIndex}}}}, ::Val{:DMHybridization}, bond::Bond, hilbert::Hilbert)
+    @assert isa(dmp.pattern.indexes.sites, NTuple{2, Colon}) "expand error: the `:sites` attributes of the DMHybridization coupling pattern must be a 2-tuple of colons."
     R̂, a = rcoordinate(bond)/norm(rcoordinate(bond)), norm(rcoordinate(bond))
-    phonon = filter(dmp.pattern.internal.index[1], hilbert[bond[1].site])
-    spin = filter(dmp.pattern.internal.index[2], hilbert[bond[2].site])
+    phonon = filter(dmp.pattern[1].internal, hilbert[bond[1].site])
+    spin = filter(dmp.pattern[2].internal, hilbert[bond[2].site])
     @assert phonon.ndirection==length(R̂) "expand error: mismatched number of directions."
     @assert isapprox(dmp.value, 1, atol=atol, rtol=rtol) "expand error: wrong coefficient of DM magnon-phonon coupling."
     return DMPExpand{totalspin(spin)}(totalspin(spin)/a, R̂, (bond.points[2], bond.points[1]))

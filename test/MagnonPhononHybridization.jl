@@ -43,7 +43,7 @@ end
     @test Table(hilbert, metric) == Table(
         [   𝕦(1, 'x'), 𝕦(1, 'y'), 𝕦(2, 'x'), 𝕦(2, 'y'),
             𝕡(1, 'x'), 𝕡(1, 'y'), 𝕡(2, 'x'), 𝕡(2, 'y'),
-            𝕓(1, 1, 1, 1), 𝕓(1, 1, 1, 2), 𝕓(2, 1, 1, 1), 𝕓(2, 1, 1, 2)
+            𝕒(1, 1, 1), 𝕒⁺(1, 1, 1), 𝕒(2, 1, 1), 𝕒⁺(2, 1, 1)
         ],
         metric
     )
@@ -80,12 +80,12 @@ end
     hilbertₘₚ = Hilbert(site=>Phonon(3)⊕Spin{2}() for site=1:length(lattice))
     magneticstructure = MagneticStructure(lattice, Dict(site=>(site%4∈(1, 0) ? [0, 0, 1] : [0, 0, -1]) for site=1:length(lattice)))
 
-    Jxy₁ = SpinTerm(:Jxy₁, 0.5742, 1, 𝕊ᵀ𝕊(:, Ising"x"+Ising"y"))
-    JAxy₂ = SpinTerm(:JAxy₂, -0.06522, 2, 𝕊ᵀ𝕊(:, Ising"x"+Ising"y"); amplitude=oddbond)
-    JBxy₂ = SpinTerm(:JBxy₂, -0.01386, 2, 𝕊ᵀ𝕊(:, Ising"x"+Ising"y"); amplitude=evenbond)
-    Jxy₃ = SpinTerm(:Jxy₃, -0.2113, 3, 𝕊ᵀ𝕊(:, Ising"x"+Ising"y"))
-    Δ₁ = SingleIonAnisotropy(:Δ₁, -3.745, 'z'; amplitude=oddbond)
-    Δ₂ = SingleIonAnisotropy(:Δ₂, -2.836, 'z'; amplitude=evenbond)
+    J₁ = Heisenberg(:J₁, 0.5742, 1)
+    JA₂ = Heisenberg(:J₂₁, -0.06522, 2; amplitude=oddbond)
+    JB₂ = Heisenberg(:J₂₂, -0.01386, 2; amplitude=evenbond)
+    J₃ = Heisenberg(:J₃, -0.2113, 3)
+    Δ₁ = SingleIonAnisotropy(:Δ₁, -3.005, 'z'; amplitude=oddbond)
+    Δ₂ = SingleIonAnisotropy(:Δ₂, -2.250, 'z'; amplitude=evenbond)
     h = Zeeman(:h, 0.2, 'z')
     T = Kinetic(:T, 0.5)
     V₁ = Hooke(:V₁, 38.0, 1)
@@ -95,7 +95,7 @@ end
     V₄ = Hooke(:V₄, 7.0, 4)
     D = DMHybridization(:D, 2.2, 1, amplitude=bond->all(point->point.site%4∈(1, 2), bond) ? 1 : -1)
 
-    FMOAFMMP = Algorithm(:FMOAFMMP, LSWT(lattice, hilbertₘₚ, (Jxy₁, JAxy₂, JBxy₂, Jxy₃, Δ₁, Δ₂, h, T, V₁, V₂₁, V₂₂, V₃, V₄, D), magneticstructure; neighbors=neighbors))
+    FMOAFMMP = Algorithm(:FMOAFMMP, LSWT(lattice, hilbertₘₚ, (J₁, JA₂, JB₂, J₃, Δ₁, Δ₂, h, T, V₁, V₂₁, V₂₂, V₃, V₄, D), magneticstructure; neighbors=neighbors))
     path = ReciprocalPath(reciprocals(lattice), (0, 0, 0)=>(2, 0, 0), length=400)
     afmeb = FMOAFMMP(:EB, EnergyBands(path, 1:16); tol=10^-6)
     plt = plot(afmeb, xminorticks=10, yminorticks=10, minorgrid=true)
