@@ -2,13 +2,13 @@ module MagnonPhononHybridization
 
 using LinearAlgebra: norm
 using QuantumLattices: atol, lazy, plain, rtol
-using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Hilbert, Index, InternalIndex, InternalProd, InternalSum, Lattice, Metric, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Table, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceDirectProducted, VectorSpaceStyle
+using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Index, InternalIndex, InternalProd, InternalSum, Lattice, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceDirectProducted
 using QuantumLattices: ⊕, ⊗, 𝕊, 𝕦, bonds, dimension, icoordinate, nneighbor, rcoordinate, scalartype, totalspin, @pattern
 using SpinWaveTheory: HolsteinPrimakoff, MagneticStructure, Magnonic
 using StaticArrays: SVector
 using TightBindingApproximation: Phononic, Quadratic, Quadraticization, TBAKind
 
-import QuantumLattices: add!, expand, operatortype, shape
+import QuantumLattices: Hilbert, Metric, Table, VectorSpaceStyle, add!, expand, operatortype, shape
 import SpinWaveTheory: LSWT
 import TightBindingApproximation: commutator
 
