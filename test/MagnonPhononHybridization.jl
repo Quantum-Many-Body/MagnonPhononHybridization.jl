@@ -1,8 +1,9 @@
 using MagnonPhononHybridization
-using Plots: plot, ylims!, savefig
 using QuantumLattices
 using SpinWaveTheory
 using TightBindingApproximation
+import CairoMakie as Makie
+import Plots
 
 @time @testset "MagnonPhononHybridization.jl" begin
     term = DMHybridization(:dmp, 2.0, 1)
@@ -98,8 +99,6 @@ end
     FMOAFMMP = Algorithm(:FMOAFMMP, LSWT(lattice, hilbertₘₚ, (J₁, JA₂, JB₂, J₃, Δ₁, Δ₂, h, T, V₁, V₂₁, V₂₂, V₃, V₄, D), magneticstructure; neighbors=neighbors))
     path = ReciprocalPath(reciprocals(lattice), (0, 0, 0)=>(2, 0, 0), length=400)
     afmeb = FMOAFMMP(:EB, EnergyBands(path, 1:16); tol=10^-6)
-    plt = plot(afmeb, xminorticks=10, yminorticks=10, minorgrid=true)
-    ylims!(plt, 0.0, 16.0)
-    display(plt)
-    savefig(plt, "magnon-phonon-hybridization.png")
+    Plots.savefig(Plots.plot(afmeb; ylims=(0.0, 16.0)), "Plots-magnon-phonon-hybridization.png")
+    Makie.save("Makie-magnon-phonon-hybridization.png", Makie.plot(afmeb; limits=(nothing, nothing, 0.0, 16.0)))
 end
