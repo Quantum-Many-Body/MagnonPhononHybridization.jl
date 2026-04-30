@@ -1,7 +1,7 @@
 module MagnonPhononHybridization
 
 using LinearAlgebra: norm
-using QuantumLattices: atol, lazy, plain, rtol
+using QuantumLattices: atol, rtol
 using QuantumLattices: Bond, CoordinatedIndex, CompositeInternal, Coupling, Fock, FockIndex, Index, InternalIndex, InternalProd, InternalSum, Lattice, Neighbors, OneOrMore, Operator, OperatorGenerator, OperatorSum, Pattern, Phonon, PhononIndex, Point, Spin, SpinIndex, Term, TermAmplitude, TermCoupling, VectorSpace, VectorSpaceDirectProducted
 using QuantumLattices: ⊕, ⊗, 𝕊, 𝕦, bonds, dimension, icoordinate, nneighbor, rcoordinate, scalartype, totalspin, @pattern
 using SpinWaveTheory: HolsteinPrimakoff, MagneticStructure, Magnonic
@@ -193,7 +193,7 @@ Construct a LSWT for a magnon-phonon coupled system.
     magneticstructure::MagneticStructure;
     neighbors::Union{Int, Neighbors}=nneighbor(terms)
 )
-    H = OperatorGenerator(bonds(magneticstructure.cell, neighbors), hilbert, terms, plain, lazy; half=false)
+    H = OperatorGenerator(bonds(magneticstructure.cell, neighbors), hilbert, terms; half=false)
     hp = HolsteinPrimakoff{valtype(H)}(magneticstructure)
     return LSWT{MagnonPhononCoupled}(lattice, H, hp)
 end
