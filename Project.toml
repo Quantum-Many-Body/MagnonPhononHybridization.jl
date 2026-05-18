@@ -12,7 +12,7 @@ TightBindingApproximation = "d3576f78-cb9d-4774-9dc5-b247cf392ff4"
 
 [compat]
 LinearAlgebra = "1.10 - 1"
-QuantumLattices = "0.14.8"
+QuantumLattices = "0.15.0"
 SpinWaveTheory = "0.2.7"
 StaticArrays = "1.4 - 1"
 TightBindingApproximation = "0.3.8"
