@@ -50,7 +50,7 @@ Fe₂Mo₃O₈ = Algorithm(
         magneticstructure
     )
 )
-path = ReciprocalPath(reciprocals(lattice), hexagon"Γ-M-Γ-K₁-K₂-Γ", length=400)
+path = ReciprocalPath(lattice, hexagon"Γ-M-Γ-K₁-K₂-Γ", length=400)
 afmeb = Fe₂Mo₃O₈(:EB, EnergyBands(path, 3:6); tol=10^-6)
 plot(
     afmeb;
@@ -61,14 +61,14 @@ plot(
 ## Berry curvature and Chern number of the magnon-polaron bands
 The Berry curvatures and Chern numbers of the magnon-polaron bands could be computed in the reciprocal unitcell:
 ```@example Fe₂Mo₃O₈
-brillouin = BrillouinZone(reciprocals(lattice), 150)
+brillouin = BrillouinZone(lattice, 150)
 berry = Fe₂Mo₃O₈(:BerryCurvature, BerryCurvature(brillouin, [6, 5]))
 plot(berry, color=:RdBu, plot_title="Berry Curvature for the 1st and 2nd Bands in FBZ")
 ```
 Here, k₁ and k₂ denote the coordinates in the reciprocal space along the two reciprocal vectors. Note in the above picture the results for 1st and 2nd bands are shown although `[6, 5]` are used to assign the bands, which arises from the artificial band doubling of the bosonic Bogoliubov transformation to diagonalize the Hamiltonian. To obtain the results for the 3rd and 4th bands:
 
 ```@example Fe₂Mo₃O₈
-brillouin = BrillouinZone(reciprocals(lattice), 150)
+brillouin = BrillouinZone(lattice, 150)
 berry = Fe₂Mo₃O₈(:BerryCurvature, BerryCurvature(brillouin, [4, 3]))
 plot(berry, color=:RdBu, plot_title="Berry Curvature for the 3rd and 4th Bands in FBZ")
 ```

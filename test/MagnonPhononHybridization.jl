@@ -97,7 +97,7 @@ end
     D = DMHybridization(:D, 2.2, 1, amplitude=bond->all(point->point.site%4∈(1, 2), bond) ? 1 : -1)
 
     FMOAFMMP = Algorithm(:FMOAFMMP, LSWT(lattice, hilbertₘₚ, (J₁, JA₂, JB₂, J₃, Δ₁, Δ₂, h, T, V₁, V₂₁, V₂₂, V₃, V₄, D), magneticstructure; neighbors=neighbors))
-    path = ReciprocalPath(reciprocals(lattice), (0, 0, 0)=>(2, 0, 0), length=400)
+    path = ReciprocalPath(lattice, (0, 0, 0)=>(2, 0, 0), length=400)
     afmeb = FMOAFMMP(:EB, EnergyBands(path, 1:16); tol=10^-6)
     Plots.savefig(Plots.plot(afmeb; ylims=(0.0, 16.0)), "Plots-magnon-phonon-hybridization.png")
     Makie.save("Makie-magnon-phonon-hybridization.png", Makie.plot(afmeb; limits=(nothing, nothing, 0.0, 16.0)))
